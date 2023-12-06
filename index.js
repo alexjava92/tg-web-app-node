@@ -15,14 +15,14 @@ bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
     const text = msg.text;
 
-    if(text === '/start')
-    await bot.sendMessage(chatId, 'Ниже появиться кнопка', {
-        reply_markup: {
-            inline_keyboard: [
-                [{text: 'Сделать заказ', web_app: {url: webAppUrl}}]
-            ]
-        }
-    });
+    if (text === '/start')
+        await bot.sendMessage(chatId, 'Ниже появиться кнопка', {
+            reply_markup: {
+                inline_keyboard: [
+                    [{text: 'Сделать заказ', web_app: {url: webAppUrl}}]
+                ]
+            }
+        });
     await bot.sendMessage(chatId, 'Ниже появиться кнопка', {
         reply_markup: {
             keyboard: [
@@ -49,22 +49,21 @@ bot.on('message', async (msg) => {
 });
 
 app.post('/web-data', async (req, res) => {
-    const {queryId, products, totalPrice} = req.body;
+    const {queryId, products = [], totalPrice} = req.body;
     try {
         await bot.answerWebAppQuery(queryId, {
             type: 'article',
             id: queryId,
             title: 'Успешная покупка',
-            input_message_content: {message_text: 'Поздравляю с покупкой на сумму: ' + totalPrice}
+            input_message_content: {
+                message_text: `
+            Поздравляю с покупкой на сумму: ${totalPrice},
+            ${products.map(item => item.title).join(', ')}`
+            }
         })
         return res.status(200).json({})
     } catch (e) {
-        await bot.answerWebAppQuery(queryId, {
-            type: 'article',
-            id: queryId,
-            title: 'Не удалось купить',
-            input_message_content: {message_text: 'Не удалось купить'}
-        })
+
         return res.status(500).json({})
     }
 
