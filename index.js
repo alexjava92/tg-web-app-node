@@ -48,10 +48,13 @@ bot.on('message', async (msg) => {
     }
 });
 
+console.log('запрос')
 app.post('/web-data', async (req, res) => {
+    console.log('запрос поступил')
     const {queryId, products = [], totalPrice} = req.body;
     console.log(req.body)
     try {
+        console.log(queryId)
         await bot.answerWebAppQuery(queryId, {
             type: 'article',
             id: queryId,
