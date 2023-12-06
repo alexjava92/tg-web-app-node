@@ -51,7 +51,7 @@ bot.on('message', async (msg) => {
 console.log('запрос')
 app.post('/web-data', async (req, res) => {
     console.log('запрос поступил')
-    const {queryId, products = [], totalPrice} = req.body;
+    const {queryId, products, totalPrice} = req.body;
     console.log(req.body)
     try {
         console.log(queryId)
@@ -61,8 +61,7 @@ app.post('/web-data', async (req, res) => {
             title: 'Успешная покупка',
             input_message_content: {
                 message_text: `
-            Поздравляю с покупкой на сумму: ${totalPrice},
-            ${products.map(item => item.title).join(', ')}`
+            Поздравляю с покупкой на сумму: ${totalPrice}`
             }
         })
         return res.status(200).json({})
