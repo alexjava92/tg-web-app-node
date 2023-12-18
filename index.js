@@ -7,6 +7,9 @@ const {findUserById, getApiKeyByUserId} = require("./src/DataBase/getDataBase");
 const createNewAddressBitcoin = require("./src/api/createNewAddressBitcoin");
 const getBalanceUserWallet = require("./src/api/getBalanceUserWallet");
 const sendBitcoin = require("./src/api/sendBitcoin");
+const getWeightTransaction = require("./src/api/getWeightTransaction");
+const getAllTransactions = require("./src/api/getAllTransactions")
+const replaceByFee = require("./src/api/replaceByFee");
 
 
 const token = '495082999:AAFG-JchEP7Kmr7iJAlwmxyTqy2qdeUVBmk';
@@ -161,6 +164,83 @@ app.post('/web-new-send-bitcoin', async (req, res) => {
         return res.status(500).json({})
     }
 })
+
+app.post('/web-new-get-weight-transaction', async (req, res) => {
+    console.log('запрос поступил /web-new-get-weight-transaction')
+    const {data} = req.body;
+    console.log(req.body)
+    try {
+        console.log(data.chatId)
+        const apiKey = await getApiKeyByUserId(data.chatId);
+        console.log(apiKey)
+        const detailTransaction = await getWeightTransaction(data.outputs, apiKey);
+        console.log(detailTransaction)
+
+        return res.status(200).json({detailTransaction})
+    } catch (e) {
+
+        return res.status(500).json({})
+    }
+})
+
+app.post('/web-new-get-all-transactions', async (req, res) => {
+    console.log('запрос поступил /web-new-get-weight-transaction')
+    const {chatId} = req.body;
+    console.log(req.body)
+    try {
+        console.log(chatId)
+        const apiKey = await getApiKeyByUserId(chatId);
+        console.log(apiKey)
+        const allTransactions = await getAllTransactions(apiKey);
+        console.log('allTransactions', allTransactions)
+
+        return res.status(200).json({allTransactions})
+    } catch (e) {
+
+        return res.status(500).json({})
+    }
+})
+
+app.post('/web-new-get-valid-bitcoin-address', async (req, res) => {
+    console.log('запрос поступил /web-new-get-valid-bitcoin-address');
+    const { address } = req.body;
+    console.log(req.body);
+
+    try {
+        const response = await fetch(`https://mempool.space/testnet/api/address/${address}`);
+
+        if (response.ok) {
+            // Если ответ успешный, возвращаем true
+            return res.status(200).json({ isValid: true });
+        } else {
+            // Если ответ не успешный, но без ошибки, возвращаем false
+            return res.status(200).json({ isValid: false });
+        }
+    } catch (error) {
+        console.error("Ошибка при проверке адреса: ", error);
+        // В случае ошибки запроса возвращаем false
+        return res.status(500).json({ error });
+    }
+});
+
+app.post('/web-new-replace-by-fee', async (req, res) => {
+    console.log('запрос поступил /web-new-replace-by-fee')
+    const {data} = req.body;
+    console.log(req.body)
+    try {
+        console.log(data.chatId)
+        const apiKey = await getApiKeyByUserId(data.chatId);
+        console.log(apiKey)
+        const transactionTxId = await replaceByFee(data.satoshisPerByte, data.originalTxId, apiKey);
+        console.log(transactionTxId)
+
+        return res.status(200).json({transactionTxId})
+    } catch (e) {
+
+        return res.status(500).json({})
+    }
+})
+
 
 const PORT = 8000;
 app.listen(PORT, () => console.log(`Сервер запущен на порту ${PORT}`))
