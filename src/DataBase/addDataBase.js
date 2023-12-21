@@ -8,7 +8,6 @@ const pool = new Pool(poolConfig);
 async function addUser(user_id, first_name, username, language_code, api_key) {
     const client = await pool.connect();
 
-
     const text =
         'INSERT INTO telegram_users (user_id, first_name, username, language_code, api_key) VALUES($1, $2, $3, $4, $5) RETURNING *';
     const values = [
@@ -33,4 +32,23 @@ async function addUser(user_id, first_name, username, language_code, api_key) {
     }
 }
 
-module.exports = addUser;
+const insertProcessedTransaction = async (txid) => {
+    const client = await pool.connect();
+    const queryText = 'INSERT INTO processed_transactions (txid) VALUES($1) RETURNING *'; // Укажите название вашей таблицы и столбца
+    const values = [txid];
+
+    try {
+        const res = await client.query(queryText, values);
+        console.log(`Транзакция добавлена: ${JSON.stringify(res.rows[0])}`);
+        return res.rows[0];
+    } catch (err) {
+        console.error(`Ошибка при добавлении транзакции: ${err.stack}`);
+    } finally {
+        client.release(); // Освобождаем соединение
+    }
+};
+
+module.exports = {
+    addUser,
+    insertProcessedTransaction
+};

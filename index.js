@@ -1,7 +1,7 @@
 const TelegramBot = require('node-telegram-bot-api');
 const express = require('express');
 const cors = require('cors');
-const addUser = require("./src/DataBase/addDataBase");
+
 const createWallet = require("./src/api/createNewUserWallet");
 const {findUserById, getApiKeyByUserId} = require("./src/DataBase/getDataBase");
 const createNewAddressBitcoin = require("./src/api/createNewAddressBitcoin");
@@ -10,15 +10,22 @@ const sendBitcoin = require("./src/api/sendBitcoin");
 const getWeightTransaction = require("./src/api/getWeightTransaction");
 const getAllTransactions = require("./src/api/getAllTransactions")
 const replaceByFee = require("./src/api/replaceByFee");
+const checkForNewTransactions = require("./src/checkForNewTransactions");
+const {addUser} = require("./src/DataBase/addDataBase");
+const botManager = require('./src/botManager')
+botManager.init('495082999:AAFG-JchEP7Kmr7iJAlwmxyTqy2qdeUVBmk');
 
-
-const token = '495082999:AAFG-JchEP7Kmr7iJAlwmxyTqy2qdeUVBmk';
 const webAppUrl = 'https://warm-peony-e23eea.netlify.app'
-const bot = new TelegramBot(token, {polling: true});
+const bot = botManager.getBot();
 const app = express();
 
 app.use(express.json());
 app.use(cors());
+
+setInterval(() => checkForNewTransactions(bot), 60000);
+
+try {
+
 
 
 bot.on('message', async (msg) => {
@@ -61,13 +68,13 @@ bot.on('message', async (msg) => {
                     ]
                 }
             },
-            await bot.sendMessage(chatId, 'Ниже появиться кнопка', {
+            /*await bot.sendMessage(chatId, 'Ниже появиться кнопка', {
                 reply_markup: {
                     keyboard: [
                         [{text: 'Открыть кошелек', web_app: {url: webAppUrl + '/wallet'}}]
                     ]
                 }
-            })
+            })*/
         );
 
 
@@ -241,6 +248,10 @@ app.post('/web-new-replace-by-fee', async (req, res) => {
     }
 })
 
+
+} catch (e) {
+    console.log(e)
+}
 
 const PORT = 8000;
 app.listen(PORT, () => console.log(`Сервер запущен на порту ${PORT}`))

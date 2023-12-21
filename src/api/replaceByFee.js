@@ -17,11 +17,14 @@ async function replaceByFee(satoshisPerByte, originalTxId, apiKey) {
         );
 
         console.log('Ответ сервера:', response.data);
+        return response.data;
     } catch (error) {
+
         console.error(
             'Ошибка:',
             error.response ? error.response.data : error.message,
         );
+        return error.response ? error.response.data : error.message;
     }
 }
 

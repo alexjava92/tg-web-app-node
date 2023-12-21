@@ -56,10 +56,53 @@ async function getApiKeyByUserId(user_id) {
         client.release(); // Освобождаем соединение
     }
 }
+// Получаем всех пользователей БД
+const getUsers = async () => {
+    const client = await pool.connect();
+
+    const query = 'SELECT * FROM telegram_users';
+
+    try {
+        const res = await pool.query(query);
+
+        if (res.rows.length > 0) {
+            // Если найдены пользователи, возвращаем их данные
+            logMessage('info', `Найдены пользователи: ${JSON.stringify(res.rows)}`);
+            return res.rows;
+        } else {
+            // Если пользователи не найдены, возвращаем пустой массив
+            logMessage('info', 'Пользователи не найдены');
+            return [];
+        }
+    } catch (err) {
+        logMessage('error', `Ошибка при получении списка пользователей: ${err.stack}`);
+        return []; // Возвращаем пустой массив в случае ошибки
+    } finally {
+        client.release(); // Освобождаем соединение
+    }
+};
+// Получаем все транзакции из БД
+const getProcessedTransactions = async () => {
+    const client = await pool.connect();
+    const queryText = 'SELECT txid FROM processed_transactions'; // Убедитесь, что имя таблицы и столбца соответствуют вашей базе данных
+    try {
+        const res = await client.query(queryText);
+        return res.rows.map(row => row.txid);
+    } catch (err) {
+        console.error(`Ошибка при получении транзакций: ${err.stack}`);
+        return [];
+    } finally {
+        client.release();
+    }
+};
+
+
 
 module.exports = {
     findUserById,
-    getApiKeyByUserId
+    getApiKeyByUserId,
+    getUsers,
+    getProcessedTransactions,
 };
 
 /*// Пример использования функции поиска пользователя
